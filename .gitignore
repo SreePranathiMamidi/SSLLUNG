@@ -1,0 +1,23 @@
+# Virtual environments
+lung_ssl/
+venv/
+env/
+
+# Datasets (never commit medical data)
+datasets/
+LUNA16/
+
+# Medical imaging files
+*.mhd
+*.raw
+*.nii
+*.nii.gz
+*.csv
+
+# Python cache
+__pycache__/
+*.pyc
+
+# OS junk
+.DS_Store
+Thumbs.db
