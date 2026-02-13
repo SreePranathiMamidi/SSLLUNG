@@ -1,19 +1,22 @@
 import torch
 import torch.nn as nn
 
-class DinoDetector(nn.Module):
-    def __init__(self, input_size):
-        super(DinoDetector, self).__init__()
-        self.shared_fc = nn.Linear(input_size, 256)
-        self.relu = nn.ReLU()
-        self.dropout = nn.Dropout(0.3)
-        self.class_fc = nn.Linear(256, 2)
-        self.bbox_fc = nn.Linear(256, 4)
-        self.sigmoid = nn.Sigmoid()
+
+class DinoClassifier(nn.Module):
+    def __init__(self, backbone):
+        super().__init__()
+
+        self.backbone = backbone
+
+        self.classifier = nn.Sequential(
+            nn.Linear(backbone.embed_dim, 512),
+            nn.ReLU(),
+            nn.Dropout(0.3),
+            nn.Linear(512, 2)
+        )
 
     def forward(self, x):
-        x = self.relu(self.shared_fc(x))
-        x = self.dropout(x)
-        class_output = self.class_fc(x)
-        bbox_output = self.sigmoid(self.bbox_fc(x))
-        return class_output, bbox_output
+        with torch.no_grad():
+            features = self.backbone(x)
+
+        return self.classifier(features)
