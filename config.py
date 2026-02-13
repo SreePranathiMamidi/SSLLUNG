@@ -1,35 +1,23 @@
-import os
 import torch
 from torchvision import transforms
+from torchvision.transforms import InterpolationMode
 
-# Define Paths
-mhd_dir = r"path to your dataset/LUNA16"  # Directory with original .mhd files for metadata
-slices_dir = r"path to your dataset/LUNA_png"  # Directory with 2D .png slices
-candidates_file = r"path to your/candidates.csv"  # Candidate locations for SSL
-checkpoint_dir = r"path to your/checkpoints"  # Directory to save model checkpoints
-annotated_dir = r"path to your/annotated_bbox"  # Directory to save annotated slices
-features_dir = r"path to your/DINO/features"  # Directory to save extracted features
-os.makedirs(checkpoint_dir, exist_ok=True)
-os.makedirs(annotated_dir, exist_ok=True)
-os.makedirs(features_dir, exist_ok=True)
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Device Configuration
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+BATCH_SIZE = 8
+NUM_EPOCHS = 20
+LR = 1e-4
 
-# Hyperparameters as per the paper
-learning_rate = 0.0001
-batch_size = 32
-weight_decay = 0.01
-num_epochs = 100
+IMAGE_SIZE = 518
 
-# Transformations for DINOv2 (expects 3-channel RGB images, resized to 504x504 as per paper)
-transform = transforms.Compose([
-    transforms.ToPILImage(),
-    transforms.Resize((504, 504)),  # Resize to 504x504 as per paper
+TRANSFORM = transforms.Compose([
+    transforms.Resize(
+        (IMAGE_SIZE, IMAGE_SIZE),
+        interpolation=InterpolationMode.BICUBIC
+    ),
     transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    transforms.Normalize(
+        mean=[0.485, 0.456, 0.406],
+        std=[0.229, 0.224, 0.225]
+    )
 ])
-
-# Patch size for DINOv2 (ViT-L/14 uses 14x14 patches)
-patch_size = 14
-num_patches = (504 // patch_size) ** 2  # 1296 patches (36x36 grid)
